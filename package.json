@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "fs": "^0.0.1-security",
+    "jwt-decode": "^4.0.0",
     "node-fetch": "^3.3.2",
     "puppeteer": "^24.2.1",
     "tough-cookie": "^5.1.1"

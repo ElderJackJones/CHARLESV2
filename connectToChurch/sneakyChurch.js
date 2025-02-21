@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer"
 import { cookieHandler, saveCookies } from "./cookieHandler.js"
-import { writeFileSync } from "fs"
+import { readFileSync, writeFileSync } from "fs"
+import { jwtDecode } from "jwt-decode"
 
 async function login(user, pass, page) {
     // Enter username
@@ -21,7 +22,7 @@ async function login(user, pass, page) {
 
 export async function sneakyChurch(user, pass) {
     // Launch browser and use cookies from previous session if possible.
-    const browser = await puppeteer.launch({ headless:false })
+    const browser = await puppeteer.launch({ headless:true })
     const page = await browser.newPage()
     const okayToSkipLogin = await cookieHandler(page)
     if (okayToSkipLogin) {
@@ -36,14 +37,39 @@ export async function sneakyChurch(user, pass) {
     }
 
     // Snag the bearer token *enters hacker mode*
-    const missionaryObj = await page.evaluate(async () => {
-        const obj = await fetch('https://referralmanager.churchofjesuschrist.org/services/auth')
-        const jsonobj = await obj.json()
-        return jsonobj
-    })
-    console.log(missionaryObj)
-    writeFileSync('bearer.json', missionaryObj.token)
+    let bearer = undefined
+    try {
+        bearer = readFileSync('bearer.json').toString()
+    } catch (e) {
+        console.log('creating bearer file')
+    }
+    
+    if (!bearer) {
+        const missionaryObj = await page.evaluate(async () => {
+            const obj = await fetch('https://referralmanager.churchofjesuschrist.org/services/auth')
+            const jsonobj = await obj.json()
+            return jsonobj;
+        });
+        console.log(JSON.stringify(missionaryObj))
+        console.log('saving bearer')
+        writeFileSync('bearer.json', missionaryObj.token)
+        bearer = missionaryObj.token 
+    }
+    const decodedBearer = jwtDecode(bearer)
+    console.log(decodedBearer)
+
+    const list = await page.evaluate(async (decodedBearer, bearer) => {
+        const peopleList = await fetch(`https://referralmanager.churchofjesuschrist.org/services/people/mission/${JSON.stringify(decodedBearer.missionId)}?includeDroppedPersons=true`, {
+            method: 'GET',
+            headers: {
+                'Authorization' : `Bearer ${bearer}`
+            }
+        })
+        const list = await peopleList.text()
+        return list
+    }, decodedBearer, bearer)
+
+    console.log(list)
 }
 
-   
-sneakyChurch("JackJones05", "R0ochsaucedinner")
+sneakyChurch('JackJones05', 'R0ochsaucedinner')
