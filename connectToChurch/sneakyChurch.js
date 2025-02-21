@@ -1,7 +1,15 @@
 import puppeteer from "puppeteer"
 import { cookieHandler, saveCookies } from "./cookieHandler.js"
-import { readFileSync, writeFileSync } from "fs"
+import { readFileSync, write, writeFileSync } from "fs"
 import { jwtDecode } from "jwt-decode"
+import { superParse } from "./superParse.js"
+import { getBearer } from "./getBearer.js"
+
+function isMoreThanADayOld(timestamp) {
+    const oneDay = 24 * 60 * 60 * 1000
+    const now = Date.now()
+    return now - timestamp > oneDay
+}
 
 async function login(user, pass, page) {
     // Enter username
@@ -18,6 +26,37 @@ async function login(user, pass, page) {
     const cookies = await page.cookies()
     await saveCookies(cookies)
 
+}
+
+// False == should not pull
+async function toPullOrNotToPullThatIsTheQuestion() {
+    try {
+        let thiccList = readFileSync('people.json')
+        let thiccJSON = await JSON.parse(thiccList)
+        if (!isMoreThanADayOld(thiccJSON.processedTime)) {
+            console.log("don't go and pull a new file! It's less than a day old")
+            return false
+        }
+        else {
+            return true
+        }
+    } catch (e) {
+        return true
+    }
+}
+
+async function getPeopleList(page, bearer, decodedBearer) {
+    const list = await page.evaluate(async (decodedBearer, bearer) => {
+        const peopleList = await fetch(`https://referralmanager.churchofjesuschrist.org/services/people/mission/${JSON.stringify(decodedBearer.missionId)}?includeDroppedPersons=true`, {
+            method: 'GET',
+            headers: {
+                'Authorization' : `Bearer ${bearer}`
+            }
+        })
+        const list = await peopleList.text()
+        return list
+    }, decodedBearer, bearer)
+    return list
 }
 
 export async function sneakyChurch(user, pass) {
@@ -37,39 +76,30 @@ export async function sneakyChurch(user, pass) {
     }
 
     // Snag the bearer token *enters hacker mode*
-    let bearer = undefined
-    try {
-        bearer = readFileSync('bearer.json').toString()
-    } catch (e) {
-        console.log('creating bearer file')
-    }
-    
-    if (!bearer) {
-        const missionaryObj = await page.evaluate(async () => {
-            const obj = await fetch('https://referralmanager.churchofjesuschrist.org/services/auth')
-            const jsonobj = await obj.json()
-            return jsonobj;
-        });
-        console.log(JSON.stringify(missionaryObj))
-        console.log('saving bearer')
-        writeFileSync('bearer.json', missionaryObj.token)
-        bearer = missionaryObj.token 
-    }
+    const bearer = await getBearer(page)
     const decodedBearer = jwtDecode(bearer)
     console.log(decodedBearer)
 
-    const list = await page.evaluate(async (decodedBearer, bearer) => {
-        const peopleList = await fetch(`https://referralmanager.churchofjesuschrist.org/services/people/mission/${JSON.stringify(decodedBearer.missionId)}?includeDroppedPersons=true`, {
-            method: 'GET',
-            headers: {
-                'Authorization' : `Bearer ${bearer}`
-            }
-        })
-        const list = await peopleList.text()
-        return list
-    }, decodedBearer, bearer)
+    let lossyList
 
-    console.log(list)
+    // Get new list if we don't have one cached
+    if (toPullOrNotToPullThatIsTheQuestion()) {
+        const fullList = await getPeopleList(page, bearer, decodedBearer)
+        const fullListObj = JSON.parse(fullList)
+        lossyList = await superParse(fullListObj)
+        writeFileSync('people.json', JSON.stringify(
+            { 'processedTime' : Date.now(),
+            'persons' : {...lossyList}
+            }
+        ))
+    } else {
+        lossyList = await JSON.parse(readFileSync('people.json'))
+    }
+
+    
+
+    page.close()
+    return
 }
 
 sneakyChurch('JackJones05', 'R0ochsaucedinner')
