@@ -3,10 +3,8 @@ import { writeFileSync } from "fs";
 export async function getBearer(page) {
     let bearer = undefined
         try {
-            bearer = readFileSync('bearer.json').toString()
-        } catch (e) {
-            console.log('creating bearer file')
-        }
+            bearer = readFileSync('resources/bearer.json').toString()
+        } catch (e) {}
         
         if (!bearer) {
             const missionaryObj = await page.evaluate(async () => {
@@ -14,9 +12,7 @@ export async function getBearer(page) {
                 const jsonobj = await obj.json()
                 return jsonobj;
             });
-            console.log(JSON.stringify(missionaryObj))
-            console.log('saving bearer')
-            writeFileSync('bearer.json', missionaryObj.token)
+            writeFileSync('resources/bearer.json', missionaryObj.token)
             bearer = missionaryObj.token 
         }
     return bearer

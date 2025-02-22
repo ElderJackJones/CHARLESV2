@@ -1,21 +1,10 @@
-import { sneakyChurch } from "./connectToChurch/sneakyChurch.js";
-import inquirer from 'inquirer'
+import chalk from "chalk";
+import { configCharles } from "./configCharles.js";
 
-inquirer
-    .prompt(
-        [{
-            type: 'input',
-            name: 'user',
-            message: "What's your churchofjesuschrist.org username? "
-        },
-        {
-            type: 'password',
-            name: 'pass',
-            message: "What's your churchofjesuschrist.org password? ",
-            mask: "#"
-        }]
-    )
-    .then(async (answers) => {
-        console.log(answers)
-        await sneakyChurch(answers.user, answers.pass)
-    })
+async function main() {
+    console.log(chalk.dim('Welcome to Charles, booting up...'))
+    const config = await configCharles()
+    
+}
+
+main()

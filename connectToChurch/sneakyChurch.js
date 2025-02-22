@@ -12,7 +12,7 @@ function isMoreThanADayOld(timestamp) {
     return now - timestamp > oneDay
 }
 
-async function login(user, pass, page) {
+export async function login(user, pass, page) {
     // Enter username
     await page.goto('https://referralmanager.churchofjesuschrist.org/')
     await page.type("input[name='identifier']", user)
@@ -46,7 +46,7 @@ async function toPullOrNotToPullThatIsTheQuestion() {
     }
 }
 
-async function getPeopleList(page, bearer, decodedBearer) {
+export async function getPeopleList(page, bearer, decodedBearer) {
     const list = await page.evaluate(async (decodedBearer, bearer) => {
         const peopleList = await fetch(`https://referralmanager.churchofjesuschrist.org/services/people/mission/${JSON.stringify(decodedBearer.missionId)}?includeDroppedPersons=true`, {
             method: 'GET',

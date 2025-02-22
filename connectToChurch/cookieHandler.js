@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'fs'
 export async function cookieHandler(page) {
     let cookies = undefined
     try {
-        cookies = JSON.parse(readFileSync('cookies.json'))
+        cookies = JSON.parse(readFileSync('resoures/cookies.json'))
         if (cookies) {
             await page.setCookie(...cookies)
             return true
@@ -14,14 +14,13 @@ export async function cookieHandler(page) {
             return false
         }
     } catch (e) {
-        console.log('something went wrong with retrieving cookies')
         return false
     }
 }
 
 export async function saveCookies(cookie) {
     try {
-        writeFileSync('cookies.json', JSON.stringify(cookie, null, 2))
+        writeFileSync('resources/cookies.json', JSON.stringify(cookie, null, 2))
     } catch (e) {
         console.error('writing cookies failed: ' + e)
     }

@@ -1,4 +1,3 @@
 /node_modules
 bearer.json
-cookies.json
-people.json
+resources/

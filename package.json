@@ -10,10 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^5.4.1",
     "fs": "^0.0.1-security",
     "inquirer": "^12.4.2",
     "jwt-decode": "^4.0.0",
     "node-fetch": "^3.3.2",
+    "ora": "^8.2.0",
+    "prompts": "^2.4.2",
     "puppeteer": "^24.2.1",
     "tough-cookie": "^5.1.1"
   }
