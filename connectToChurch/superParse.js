@@ -19,7 +19,6 @@ export function superParse(data) {
                     assignedDate: person.referralAssignedDate,
                 };
             } catch (error) {
-                console.warn("Unable to parse person:", person, error);
                 return null;
             }
         })

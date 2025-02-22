@@ -10,7 +10,8 @@ export async function configCharles() {
     try {
         charlesConfig = readFileSync('resources/charlesConfig.json')
     } catch (e) {
-        console.log("\n\n")
+        console.clear()
+        console.log("\n")
         console.log(chalk.dim("You don't seem to have set up your Zones yet, let's do that now!"))
         console.log(chalk.greenBright("You can find the Zone Chat ID in the messenger webpage (EX: ") + chalk.dim("https://www.messenger.com/t/") + chalk.greenBright("2276304299063254)"))
     }

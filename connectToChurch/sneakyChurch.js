@@ -7,6 +7,7 @@ import { getBearer } from "./getBearer.js"
 import { listToday } from "./listToday.js"
 import { createPayload } from "../createPayload.js"
 import { createConfig } from "../createConfig.js"
+import ora from "ora"
 
 function isMoreThanADayOld(timestamp) {
     const oneDay = 24 * 60 * 60 * 1000
@@ -37,7 +38,6 @@ async function toPullOrNotToPullThatIsTheQuestion() {
         let thiccList = readFileSync('people.json')
         let thiccJSON = await JSON.parse(thiccList)
         if (!isMoreThanADayOld(thiccJSON.processedTime)) {
-            console.log("don't go and pull a new file! It's less than a day old")
             return false
         }
         else {
@@ -63,9 +63,13 @@ export async function getPeopleList(page, bearer, decodedBearer) {
 }
 
 export async function sneakyChurch(user, pass) {
+    console.clear()
+    let spool = ora('Opening browser').start()
     // Launch browser and use cookies from previous session if possible.
     const browser = await puppeteer.launch({ headless:true })
     const page = await browser.newPage()
+    spool.color = 'magenta'
+    spool.text = "Doin' some black magic"
     const okayToSkipLogin = await cookieHandler(page)
     if (okayToSkipLogin) {
         await page.goto('https://referralmanager.churchofjesuschrist.org/')
@@ -77,17 +81,18 @@ export async function sneakyChurch(user, pass) {
     } else {
         await login(user, pass, page)
     }
-
+    spool.color = 'green'
+    spool.text = 'Stealing your identity'
     // Snag the bearer token *enters hacker mode*
     const bearer = await getBearer(page)
     const decodedBearer = jwtDecode(bearer)
-    console.log(decodedBearer)
-
     let lossyList
     let todaysList
 
     // Get new list if we don't have one cached
     if (toPullOrNotToPullThatIsTheQuestion()) {
+        spool.color = 'cyan'
+        spool.text = 'Fetching referrals'
         const fullList = await getPeopleList(page, bearer, decodedBearer)
         const fullListObj = JSON.parse(fullList)
         lossyList = await superParse(fullListObj)
@@ -101,6 +106,7 @@ export async function sneakyChurch(user, pass) {
         lossyList = await JSON.parse(readFileSync('people.json'))
         todaysList = await listToday(lossyList)
     }
+    spool.succeed('Referrals retrieved')
     await browser.close()
     return todaysList
 }

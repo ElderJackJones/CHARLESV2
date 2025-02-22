@@ -35,6 +35,5 @@ export async function listToday(list) {
     // const listFinal = todaysListWithoutGrey.filter(obj => unattempted(obj))
 
     const listToday = list.filter(obj => unattempted(obj))
-    console.log(listToday)
     return listToday
 }
