@@ -4,6 +4,7 @@ import { readFileSync, write, writeFileSync } from "fs"
 import { jwtDecode } from "jwt-decode"
 import { superParse } from "./superParse.js"
 import { getBearer } from "./getBearer.js"
+import { listToday } from "./listToday.js"
 
 function isMoreThanADayOld(timestamp) {
     const oneDay = 24 * 60 * 60 * 1000
@@ -81,25 +82,23 @@ export async function sneakyChurch(user, pass) {
     console.log(decodedBearer)
 
     let lossyList
+    let todaysList
 
     // Get new list if we don't have one cached
     if (toPullOrNotToPullThatIsTheQuestion()) {
         const fullList = await getPeopleList(page, bearer, decodedBearer)
         const fullListObj = JSON.parse(fullList)
         lossyList = await superParse(fullListObj)
+        todaysList = await listToday(lossyList)
         writeFileSync('people.json', JSON.stringify(
             { 'processedTime' : Date.now(),
-            'persons' : {...lossyList}
+            'persons' : {...todaysList}
             }
         ))
     } else {
         lossyList = await JSON.parse(readFileSync('people.json'))
+        todaysList = await listToday(lossyList)
     }
-
-    
-
     page.close()
     return
 }
-
-sneakyChurch('JackJones05', 'R0ochsaucedinner')
