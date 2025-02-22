@@ -25,10 +25,16 @@ function unattempted(obj) {
     return (obj.referralStatus === 10)
 }
 
-export async function listToday(list) {
-    const todaysList = list.filter(obj => isWithinTimeRange(obj.assignedDate))
-    const todaysListWithoutGrey = todaysList.filter(obj => isGreenOrYellow(obj))
-    const listFinal = todaysListWithoutGrey.filter(obj => unattempted(obj))
+function unsuccessful(obj) {
+    return (obj.referralStatus === 20)
+}
 
-    return listFinal
+export async function listToday(list) {
+    // const todaysList = list.filter(obj => isWithinTimeRange(obj.assignedDate))
+    // const todaysListWithoutGrey = todaysList.filter(obj => isGreenOrYellow(obj))
+    // const listFinal = todaysListWithoutGrey.filter(obj => unattempted(obj))
+
+    const listToday = list.filter(obj => unattempted(obj))
+    console.log(listToday)
+    return listToday
 }

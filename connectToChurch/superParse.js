@@ -16,7 +16,7 @@ export function superParse(data) {
                     zoneName: person.zoneName ?? null,
                     districtId: person.districtId ?? null,
                     areaName: person.areaName ?? null,
-                    assignedDate: new Date(person.referralAssignedDate),
+                    assignedDate: person.referralAssignedDate,
                 };
             } catch (error) {
                 console.warn("Unable to parse person:", person, error);

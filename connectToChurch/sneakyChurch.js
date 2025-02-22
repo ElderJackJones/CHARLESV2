@@ -5,6 +5,8 @@ import { jwtDecode } from "jwt-decode"
 import { superParse } from "./superParse.js"
 import { getBearer } from "./getBearer.js"
 import { listToday } from "./listToday.js"
+import { createPayload } from "../createPayload.js"
+import { createConfig } from "../createConfig.js"
 
 function isMoreThanADayOld(timestamp) {
     const oneDay = 24 * 60 * 60 * 1000
@@ -99,6 +101,6 @@ export async function sneakyChurch(user, pass) {
         lossyList = await JSON.parse(readFileSync('people.json'))
         todaysList = await listToday(lossyList)
     }
-    page.close()
-    return
+    await browser.close()
+    return todaysList
 }
