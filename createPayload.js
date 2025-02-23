@@ -22,7 +22,7 @@ export async function createPayload(list) {
 
     let zoneList;
     try {
-        zoneList = JSON.parse( await configCharles())
+        zoneList = JSON.parse( await configCharles('./resources/charlesConfig.json'))
     } catch (error) {
         console.error("Error fetching zone data:", error);
         return null; // Return `null` or throw an error if needed

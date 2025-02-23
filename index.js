@@ -10,7 +10,7 @@ import { promises as fs } from "fs";
 async function main() {
     console.clear()
     console.log(chalk.dim('Welcome to Charles, booting up...'))
-    const config = await createConfig()
+    const config = await createConfig('resources/config.json')
     
     async function menu() {
         const questions = {
@@ -32,7 +32,6 @@ async function main() {
     let select;
     do {
         select = await menu();
-        console.log(select);
         if (!select.program) {
             console.log(chalk.red(chalk.italic("No option selected. Please try again.")));
             continue;
@@ -53,10 +52,10 @@ async function main() {
             break;
         } else if (select.program?.includes('settings')) {
             try {
-                await fs.unlink('resources/config.json')
-                await configCharles()
+                await fs.unlink('./resources/charlesConfig.json')
+                await configCharles('./resources/charlesConfig.json')
             } catch (err) {
-                await configCharles()
+                await configCharles('./resources/charlesConfig.json')
             }
             
         }

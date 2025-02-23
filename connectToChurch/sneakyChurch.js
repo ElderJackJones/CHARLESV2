@@ -5,8 +5,6 @@ import { jwtDecode } from "jwt-decode"
 import { superParse } from "./superParse.js"
 import { getBearer } from "./getBearer.js"
 import { listToday } from "./listToday.js"
-import { createPayload } from "../createPayload.js"
-import { createConfig } from "../createConfig.js"
 import ora from "ora"
 
 function isMoreThanADayOld(timestamp) {

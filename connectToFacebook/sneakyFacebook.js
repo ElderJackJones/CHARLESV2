@@ -71,7 +71,7 @@ const login = async (user, pass, page) => {
 
 export async function sneakyFacebook() {
     const spool = ora('Doing some McDevilry').start();
-    const userConfig = await createConfig();
+    const userConfig = await createConfig('../resources/config.json');
     const config = {
         headless: false,
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
