@@ -76,6 +76,6 @@ export async function getZone() {
             }
         }
         await browser.close()
-        spinner.succeed('Zone information updated!')
+        spinner.succeed(' Zone information updated!')
         return zoneList
 }

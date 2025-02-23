@@ -5,11 +5,11 @@ import { sneakyChurch } from "./connectToChurch/sneakyChurch.js";
 import { prettyStringZones } from "./prettyStringZones.js";
 import { createConfig } from "./createConfig.js";
 import { createPayload } from "./createPayload.js";
+import { promises as fs } from "fs";
 
 async function main() {
     console.clear()
     console.log(chalk.dim('Welcome to Charles, booting up...'))
-    const charlesConfig = await configCharles()
     const config = await createConfig()
     
     async function menu() {
@@ -33,7 +33,10 @@ async function main() {
     do {
         select = await menu();
         console.log(select);
-
+        if (!select.program) {
+            console.log(chalk.red(chalk.italic("No option selected. Please try again.")));
+            continue;
+        }
         if (select.program?.includes('charles')) {
             // run charles
             // You can call the function that handles charles here, or leave it empty to simulate charles behavior
@@ -48,8 +51,16 @@ async function main() {
         } else if (select.program?.includes('exit')) {
             console.log("Exiting...");
             break;
+        } else if (select.program?.includes('settings')) {
+            try {
+                await fs.unlink('resources/config.json')
+                await configCharles()
+            } catch (err) {
+                await configCharles()
+            }
+            
         }
-    } while (select.program?.includes('charles') || select.program?.includes('report'));
+    } while (!select.program?.includes('exit'));
 }
 
 main();
