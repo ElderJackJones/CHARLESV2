@@ -2,6 +2,7 @@ import puppeteer from "puppeteer";
 import { cookieHandler, saveCookies } from "./connectToChurch/cookieHandler.js";
 import { getBearer } from "./connectToChurch/getBearer.js";
 import { jwtDecode } from "jwt-decode";
+import { promises as fs } from "node:fs";
 import ora from "ora";
 
 async function login(user, pass, page) {
@@ -40,12 +41,26 @@ export async function getZone(config=null) {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     if (!config) {
-        config = await fetch('./resources/config.json').then(response => response.json())
+        config = await fs.readFile('./resources/config.json', 'utf8').then(JSON.parse);
     }
     const user = config.username
     const pass = config.password
 
-    const okayToSkipLogin = await cookieHandler(page)
+    const needToGoOnline = async () => {
+        try {
+            let rawList = fs.readFile('./resources/rawList.json', 'utf-8').then(JSON.parse)
+            return rawList
+        // eslint-disable-next-line no-unused-vars
+        } catch (e) {
+            return false
+        }
+    }
+
+    let useWitchery = await needToGoOnline()
+    let stuff = undefined
+
+    if (!useWitchery) {
+        const okayToSkipLogin = await cookieHandler(page)
         if (okayToSkipLogin) {
             await page.goto('https://referralmanager.churchofjesuschrist.org/')
             const isLoggedOut = await page.$("input[name='identifier']")
@@ -64,7 +79,13 @@ export async function getZone(config=null) {
         spinner.color = 'yellow'
         spinner.text = 'Making it look pretty'
 
-        const stuff = await JSON.parse(await getPeopleList(page, bearer, decodedBearer))
+        stuff = await JSON.parse(await getPeopleList(page, bearer, decodedBearer))
+    } else {
+        spinner.text = 'Skipping login'
+        spinner.color = 'green'
+        stuff = useWitchery
+    }
+    
         const list = stuff.persons
     
         let zoneList = [];
