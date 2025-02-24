@@ -17,7 +17,7 @@ const getCurrentDir = () => {
     return path.dirname(pathname);
 };
 
-export async function getBearer(page, pathToHome = '') {
+export async function getBearer(page) {
 
     let bearer 
     const currentDir = getCurrentDir();
@@ -37,7 +37,7 @@ export async function getBearer(page, pathToHome = '') {
             }
 
             // Save the token to bearer.txt
-            await fs.writeFile(bearerPath, missionaryObj.token, "utf-8");
+            await fs.writeFile(filePath, missionaryObj.token, "utf-8");
 
             bearer = missionaryObj.token;
         } catch (error) {

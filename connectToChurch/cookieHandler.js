@@ -16,7 +16,7 @@ const getCurrentDir = () => {
 };
 
 // Returns true if cookies exist and are applied, false if login is needed
-export async function cookieHandler(page, relativePath = '') {
+export async function cookieHandler(page) {
     try {
         const currentDir = getCurrentDir();
         const filePath = path.resolve(currentDir, '..', 'resources', 'cookies.json'); // Properly resolve relative path
@@ -31,7 +31,7 @@ export async function cookieHandler(page, relativePath = '') {
 }
 
 // Saves cookies to file
-export async function saveCookies(cookie, relativePath = '') {
+export async function saveCookies(cookie) {
     try {
         const currentDir = getCurrentDir();
 
