@@ -1,6 +1,5 @@
 import ora from 'ora';
 import puppeteer from 'puppeteer';
-import { createConfig } from '../createConfig.js';
 import { facebookCookieHandler, saveCookies } from './facebookCookieHandler.js';
 
 // Function to launch the browser
@@ -42,9 +41,6 @@ function delay(ms) {
 }
 
 // Function to close the browser
-const closeBrowser = async (browser) => {
-    if (browser) await browser.close();
-};
 
 // Main function using functional composition
 const startMessengerBot = async (config) => {
@@ -71,13 +67,13 @@ const login = async (user, pass, page) => {
 
 export async function sneakyFacebook() {
     const spool = ora('Doing some McDevilry').start();
-    const userConfig = await createConfig('../resources/config.json');
+    const userConfig = await fetch('../resources/config.json').then(response => response.json())
     const config = {
         headless: false,
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     };
 
-    const { browser, page } = await startMessengerBot(config);
+    const { page } = await startMessengerBot(config);
     spool.color = 'green'
     spool.text = 'Spy Kids style sneaking'
     const isLoggedIn = await facebookCookieHandler(page)

@@ -1,6 +1,5 @@
 import puppeteer from "puppeteer";
 import { cookieHandler, saveCookies } from "./connectToChurch/cookieHandler.js";
-import { createConfig } from "./createConfig.js";
 import { getBearer } from "./connectToChurch/getBearer.js";
 import { jwtDecode } from "jwt-decode";
 import ora from "ora";
@@ -36,11 +35,13 @@ async function getPeopleList(page, bearer, decodedBearer) {
     return list
 }
 
-export async function getZone() {
+export async function getZone(config=null) {
     const spinner = ora('Getting zone info').start()
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
-    const config = await createConfig('resources/config.json')
+    if (!config) {
+        config = await fetch('./resources/config.json').then(response => response.json())
+    }
     const user = config.username
     const pass = config.password
 

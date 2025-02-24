@@ -1,27 +1,43 @@
-import { readFileSync, writeFileSync } from 'fs'
+import { promises as fs } from 'fs';
+import path from 'path';
 
-    // will return 'true' if you should skip ahead,
-    // will return 'false' if you need to login
+// Helper to get the current directory from the file URL
+// Helper to get the current directory from the file URL
+const getCurrentDir = () => {
+    const fileUrl = new URL(import.meta.url);
+    let pathname = fileUrl.pathname;
 
-export async function cookieHandler(page) {
-    let cookies = undefined
+    // If pathname starts with a leading slash, remove it for Windows compatibility
+    if (pathname.startsWith('/')) {
+        pathname = pathname.substring(1);
+    }
+
+    return path.dirname(pathname);
+};
+
+// Returns true if cookies exist and are applied, false if login is needed
+export async function cookieHandler(page, relativePath = '') {
     try {
-        cookies = JSON.parse(readFileSync('resoures/cookies.json'))
-        if (cookies) {
-            await page.setCookie(...cookies)
-            return true
-        } else {
-            return false
-        }
-    } catch (e) {
-        return false
+        const currentDir = getCurrentDir();
+        const filePath = path.resolve(currentDir, '..', 'resources', 'cookies.json'); // Properly resolve relative path
+        const cookies = await fs.readFile(filePath, 'utf8').then(JSON.parse); // Using fs.readFile instead of fetch
+        
+        await page.setCookie(...cookies);
+        return true;
+    } catch (error) {
+        console.error('Failed to load cookies:', error.message);
+        return false;
     }
 }
 
-export async function saveCookies(cookie) {
+// Saves cookies to file
+export async function saveCookies(cookie, relativePath = '') {
     try {
-        writeFileSync('resources/cookies.json', JSON.stringify(cookie, null, 2))
-    } catch (e) {
-        console.error('writing cookies failed: ' + e)
+        const currentDir = getCurrentDir();
+
+        const filePath = path.resolve(currentDir, '..', 'resources', 'cookies.json'); // Properly resolve relative path
+        await fs.writeFile(filePath, JSON.stringify(cookie, null, 2));
+    } catch (error) {
+        console.error('Writing cookies failed:', error.message);
     }
 }

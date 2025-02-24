@@ -1,11 +1,13 @@
 import puppeteer from "puppeteer"
+import path from 'node:path'
 import { cookieHandler, saveCookies } from "./cookieHandler.js"
-import { readFileSync, write, writeFileSync } from "fs"
+import { readFileSync, writeFileSync } from "fs"
 import { jwtDecode } from "jwt-decode"
+import { getAverage } from "./getAverage.js"
 import { superParse } from "./superParse.js"
-import { getBearer } from "./getBearer.js"
 import { listToday } from "./listToday.js"
 import ora from "ora"
+import { getBearer } from "./getBearer.js"
 
 function isMoreThanADayOld(timestamp) {
     const oneDay = 24 * 60 * 60 * 1000
@@ -31,16 +33,19 @@ export async function login(user, pass, page) {
 }
 
 // False == should not pull
-async function toPullOrNotToPullThatIsTheQuestion() {
+async function toPullOrNotToPullThatIsTheQuestion(pathToHome) {
     try {
-        let thiccList = readFileSync('people.json')
+        let thiccList = readFileSync(path.join(pathToHome, 'resources', 'people.json'))
         let thiccJSON = await JSON.parse(thiccList)
-        if (!isMoreThanADayOld(thiccJSON.processedTime)) {
+        let rawList = readFileSync(path.join(pathToHome, 'resources', 'rawList.json'))
+        let rawJSON = await JSON.parse(rawList)
+        if (!isMoreThanADayOld(thiccJSON.processedTime) && !isMoreThanADayOld(rawJSON.processedTime)) {
             return false
         }
         else {
             return true
         }
+    // eslint-disable-next-line no-unused-vars
     } catch (e) {
         return true
     }
@@ -60,7 +65,7 @@ export async function getPeopleList(page, bearer, decodedBearer) {
     return list
 }
 
-export async function sneakyChurch(user, pass) {
+export async function sneakyChurch(user, pass, pathToHome="") {
     console.clear()
     let spool = ora('Opening browser').start()
     // Launch browser and use cookies from previous session if possible.
@@ -68,7 +73,7 @@ export async function sneakyChurch(user, pass) {
     const page = await browser.newPage()
     spool.color = 'magenta'
     spool.text = "Doin' some black magic"
-    const okayToSkipLogin = await cookieHandler(page)
+    const okayToSkipLogin = await cookieHandler(page, pathToHome)
     if (okayToSkipLogin) {
         await page.goto('https://referralmanager.churchofjesuschrist.org/')
         const isLoggedOut = await page.$("input[name='identifier']")
@@ -88,23 +93,35 @@ export async function sneakyChurch(user, pass) {
     let todaysList
 
     // Get new list if we don't have one cached
-    if (toPullOrNotToPullThatIsTheQuestion()) {
+    if (toPullOrNotToPullThatIsTheQuestion(pathToHome)) {
         spool.color = 'cyan'
         spool.text = 'Fetching referrals'
         const fullList = await getPeopleList(page, bearer, decodedBearer)
+
+        writeFileSync(path.join(pathToHome, 'resources', 'rawList.json'), fullList)
         const fullListObj = JSON.parse(fullList)
+        spool.info('Getting Average contact times!')
+
+        console.log(await getAverage(fullListObj.persons, page))
+
         lossyList = await superParse(fullListObj)
         todaysList = await listToday(lossyList)
-        writeFileSync('people.json', JSON.stringify(
+        writeFileSync(path.join(pathToHome, 'resources', 'people.json'), JSON.stringify(
             { 'processedTime' : Date.now(),
             'persons' : {...todaysList}
             }
         ))
+
     } else {
-        lossyList = await JSON.parse(readFileSync('people.json'))
+        lossyList = await JSON.parse(readFileSync(path.join(pathToHome, 'resources', 'people.json')))
+        let rawList = await JSON.parse(readFileSync(path.join(pathToHome, 'resources', 'rawList.json')))
+        spool.info('Snooping out Average contact times!')
+
+        console.log(await getAverage(rawList.persons, page))
         todaysList = await listToday(lossyList)
     }
     spool.succeed('Referrals retrieved')
     await browser.close()
     return todaysList
 }
+

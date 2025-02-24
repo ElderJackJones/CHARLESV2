@@ -46,8 +46,10 @@ export async function editPayload() {
             }
         }
         
-        prettyList[zone] = areaMap;
+        prettyList[zone.toString()] = areaMap;
     }
     spool.succeed('pretty')
     return prettyList
 }
+
+console.log(await editPayload())

@@ -18,14 +18,14 @@ function checkConfig(configPath) {
 
 export async function configCharles(configPath) {
      if (!existsSync(configPath.replace(/\\charlesConfig\.json$/, '\\config.json'))) {
-        await createConfig('resources/config.json')
+        await createConfig('./resources/config.json')
      }
     if (checkConfig(configPath)) {
         return await JSON.parse(readFileSync(configPath))
     } else {
         console.clear()
         console.log(chalk.dim("You don't seem to have set up Charles yet, let's do that now!\n"))
-        console.log(chalk.cyanBright("You're going to be asked for the Zone Chat ID of your groups.\nYou can find them in the Messenger Website ") + chalk.dim("(EX https://www.messenger.com/t/") + chalk.cyanBright("2276304299063254") + chalk.dim("<-- ID)"))
+        console.log(chalk.cyanBright("You're going to be asked for the Zone Chat ID of your groups.\nYou can find them in the Messenger Website ") + chalk.dim("(EX https://www.messenger.com/t/") + chalk.cyanBright("2276304299063254") + chalk.dim("<-- ID)\m"))
         const zoneArray = await getZone()
         let questions = []
         for (let i = 0; i < zoneArray.length; i++) {

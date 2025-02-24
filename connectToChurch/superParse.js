@@ -18,6 +18,7 @@ export function superParse(data) {
                     areaName: person.areaName ?? null,
                     assignedDate: person.referralAssignedDate,
                 };
+            // eslint-disable-next-line no-unused-vars
             } catch (error) {
                 return null;
             }

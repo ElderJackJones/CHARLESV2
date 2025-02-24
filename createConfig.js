@@ -1,24 +1,10 @@
 import chalk from "chalk";
-import { readFileSync, writeFileSync, existsSync, promises } from "fs";
-import { join } from "path";
+import { promises } from "fs";
 import prompts from "prompts";
 
-async function checkConfig(configPath) {
-    try {
-        if (!existsSync(configPath)) {
-            throw new Error("Config file not found.");
-        }
-        return await JSON.parse(readFileSync(configPath));
-    } catch (e) {
-        return null;
-    }
-}
 
 export async function createConfig(configPath) {
-    let config = await checkConfig(configPath);
-    if (config) {
-        return config;
-    }
+
     const questions = [
         {
             type: "text",

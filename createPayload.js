@@ -22,7 +22,7 @@ export async function createPayload(list) {
 
     let zoneList;
     try {
-        zoneList = JSON.parse( await configCharles('./resources/charlesConfig.json'))
+        zoneList = await configCharles('./resources/charlesConfig.json')
     } catch (error) {
         console.error("Error fetching zone data:", error);
         return null; // Return `null` or throw an error if needed
@@ -30,7 +30,6 @@ export async function createPayload(list) {
 
     let payload = { stamp: Date.now(), payload: {} };
     const zones = Object.keys(zoneList);
-    console.log("Extracted zones:", zones);
     
     for (let zone of zones) {
         payload.payload[zone] = list.filter(person => 
@@ -38,12 +37,6 @@ export async function createPayload(list) {
         );
     }
 
-        // Log unassigned members
-        list.forEach(person => {
-            if (!person.zoneName) {
-                console.warn(`${person.name} couldn't be assigned to a zone!`);
-            }
-        });
         try {
             writeFileSync(FILE_NAME, JSON.stringify(payload, null, 2));
         } catch (error) {

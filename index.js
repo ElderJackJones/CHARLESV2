@@ -3,18 +3,17 @@ import prompts from "prompts";
 import { configCharles } from "./configCharles.js";
 import { sneakyChurch } from "./connectToChurch/sneakyChurch.js";
 import { prettyStringZones } from "./prettyStringZones.js";
-import { createConfig } from "./createConfig.js";
 import { createPayload } from "./createPayload.js";
 import { promises as fs } from "fs";
 
 async function main() {
     console.clear()
     console.log(chalk.dim('Welcome to Charles, booting up...'))
-    const config = await createConfig('resources/config.json')
+    const config = await fs.readFile('./resources/config.json', 'utf8').then(JSON.parse);
     
     async function menu() {
         const questions = {
-            type: 'multiselect',
+            type: 'select',
             name: 'program',
             message: 'What should we do today?',
             choices: [
@@ -23,7 +22,7 @@ async function main() {
                 {title: 'Change settings', value: 'settings'},
                 { title: 'Yeet outta here', value: 'exit'}
             ],
-            max: 1,
+            initial: 1,
             instructions: false
         }
         return await prompts(questions)
@@ -54,6 +53,7 @@ async function main() {
             try {
                 await fs.unlink('./resources/charlesConfig.json')
                 await configCharles('./resources/charlesConfig.json')
+            // eslint-disable-next-line no-unused-vars
             } catch (err) {
                 await configCharles('./resources/charlesConfig.json')
             }
