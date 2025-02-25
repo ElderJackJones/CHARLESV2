@@ -6,7 +6,7 @@ function isMoreThan12HoursOld(timestamp) {
     return (Date.now() - timestamp) > TWELVE_HOURS_MS;
 }
 
-export async function createPayload(list) {
+export async function createPayload(list, avgMessage) {
     const FILE_NAME = 'payload.json';
 
     if (existsSync(FILE_NAME)) {
@@ -28,7 +28,7 @@ export async function createPayload(list) {
         return null; // Return `null` or throw an error if needed
     }
 
-    let payload = { stamp: Date.now(), payload: {} };
+    let payload = { stamp: Date.now(), average: avgMessage, payload: {} };
     const zones = Object.keys(zoneList);
     
     for (let zone of zones) {

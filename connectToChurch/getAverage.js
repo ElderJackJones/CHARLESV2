@@ -2,6 +2,31 @@ import chalk from "chalk";
 import cliProgress from 'cli-progress'
 import { averageFilter } from "./averageFilter.js";
 
+function meanyFace(arr) {
+    const validNumbers = arr.filter(item => item !== null && item !== undefined && !isNaN(item)); 
+    if (validNumbers.length === 0) return "0 min"; // Avoid division by zero
+
+    const mean = validNumbers.reduce((sum, item) => sum + item, 0) / validNumbers.length;
+    
+    return formatTime(mean);
+}
+
+function formatTime(minutes) {
+    const days = Math.floor(minutes / 1440); // 1 day = 1440 minutes
+    const hours = Math.floor((minutes % 1440) / 60); // Remaining hours
+    const mins = Math.floor(minutes % 60); // Remaining minutes
+
+    let result = [];
+    if (days > 0) result.push(`${days} day${days > 1 ? 's' : ''}`);
+    if (hours > 0) result.push(`${hours} hr${hours > 1 ? 's' : ''}`);
+    if (mins > 0 || result.length === 0) result.push(`${mins} min${mins > 1 ? 's' : ''}`);
+
+    return result.join(" / ");
+}
+
+
+
+
 async function processContactTime(timeline) {
     const reversedTimeline = [...timeline].reverse();
 
@@ -64,7 +89,7 @@ async function getContactTime(guid, page) {
 
 export async function getAverage(wholeShebang, page) {
     const bar = new cliProgress.SingleBar({
-        format: 'DigiStalking People |' + chalk.cyan('{bar}') + '| {percentage}% || {value}/{total} People',
+        format: 'DigiStalking People |' + chalk.cyan('{bar}') + '| {percentage}% || {value}/{total} People || ETA: {eta_formatted}',
         barCompleteChar: '\u2588',
         barIncompleteChar: '\u2591',
         hideCursor: true
@@ -85,7 +110,19 @@ export async function getAverage(wholeShebang, page) {
         unprocessedContacts[person.zoneName].push(time)
         bar.increment()
     }
-    
 
-    return unprocessedContacts;
+    let message = "-->Contact Time<--\n";
+    delete unprocessedContacts[null];
+    delete unprocessedContacts[undefined];
+    delete unprocessedContacts[""];
+    for (const zone in unprocessedContacts) {
+        if (!zone) {
+            continue;
+        }
+        let avg = meanyFace(unprocessedContacts[zone]);
+        message += `↳ ${zone.trim()}: ${avg}\n`;
+    }
+
+    return message;
+
 }

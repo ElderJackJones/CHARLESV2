@@ -91,6 +91,7 @@ export async function sneakyChurch(user, pass, pathToHome="") {
     const decodedBearer = jwtDecode(bearer)
     let lossyList
     let todaysList
+    let beginPackage
 
     // Get new list if we don't have one cached
     if (toPullOrNotToPullThatIsTheQuestion(pathToHome)) {
@@ -102,7 +103,7 @@ export async function sneakyChurch(user, pass, pathToHome="") {
         const fullListObj = JSON.parse(fullList)
         spool.info('Getting Average contact times!')
 
-        console.log(await getAverage(fullListObj.persons, page))
+        beginPackage = await getAverage(fullListObj.persons, page)
 
         lossyList = await superParse(fullListObj)
         todaysList = await listToday(lossyList)
@@ -117,11 +118,11 @@ export async function sneakyChurch(user, pass, pathToHome="") {
         let rawList = await JSON.parse(readFileSync(path.join(pathToHome, 'resources', 'rawList.json')))
         spool.info('Snooping out Average contact times!')
 
-        console.log(await getAverage(rawList.persons, page))
+        beginPackage = await getAverage(rawList.persons, page)
         todaysList = await listToday(lossyList)
     }
     spool.succeed('Referrals retrieved')
     await browser.close()
-    return todaysList
+    return [todaysList, beginPackage]
 }
 

@@ -1,6 +1,7 @@
-export function prettyStringZones(data) {
+export function prettyStringZones(data, avg) {
     let result = '';
-    
+    result += avg
+    result += "\n"
     // Loop through each zone in the data
     for (const zone in data.payload) {
       if (data.payload.hasOwnProperty(zone)) {
